@@ -18,4 +18,5 @@ TEST_F(StatusTests, BasicTests) {
   releveldb::Slice slice("key");
   status = releveldb::Status::NotFound(slice);
   EXPECT_EQ("Not Found: key", status.ToString());
+  EXPECT_FALSE(status.IsCorruption());
 }
