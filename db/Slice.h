@@ -1,5 +1,5 @@
 //
-// Created by 王 瑞 on 2016/10/29.
+// Created by amaliuji on 2016/10/29.
 //
 
 #ifndef RELEVELDB_SLICE_H
@@ -15,12 +15,19 @@ namespace releveldb {
 
 class Slice {
 public:
+  Slice(const Slice& ) = delete;
+  Slice &operator=(const Slice&) = delete;
+
   Slice(): data_(""), size_(0) { }
   Slice(const char* data, size_t size): data_(data),
                                         size_(size) { }
   Slice(const std::string& dataStr): data_(dataStr.data()),
                                      size_(dataStr.size()) {}
   Slice(const char* data): data_(data), size_(strlen(data)) {}
+
+  ~Slice() {
+    Clear();
+  }
 
   inline const char* Data() const {
     return data_;

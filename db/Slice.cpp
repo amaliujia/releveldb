@@ -1,5 +1,5 @@
 //
-// Created by 王 瑞 on 2016/10/29.
+// Created by amaliujia on 2016/10/29.
 //
 
 #include "Slice.h"
