@@ -32,7 +32,7 @@ target_link_libraries(releveldb db)
 add_subdirectory(db)
 
 # tests
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 # libs
 add_subdirectory(libs/googlemock)

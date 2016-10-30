@@ -34,10 +34,7 @@ public:
     return size_ == 0;
   }
 
-  char operator[](size_t i) const {
-    assert(i < Size());
-    return data_[i];
-  }
+  char operator[](size_t i) const;
 
   void Clear() {
     data_ = "";
@@ -56,14 +53,18 @@ public:
 
   int Compare(const Slice& slice) const;
 
-  inline bool operator==(const Slice& slice);
-
-  inline bool operator!=(const Slice &slice);
-
 private:
   const char* data_;
   size_t size_;
 };
+
+inline bool operator==(const Slice& x, const Slice& y) {
+  return (x.Size() == y.Size()) && (memcmp(x.Data(), y.Data(), x.Size()) == 0);
+}
+
+inline bool operator!=(const Slice& x, const Slice& y) {
+  return !(x == y);
+}
 
 }  // releveldb
 

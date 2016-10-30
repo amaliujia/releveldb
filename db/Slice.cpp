@@ -22,12 +22,9 @@ int Slice::Compare(const Slice& slice) const {
   return cmp;
 }
 
-inline bool Slice::operator==(const Slice& slice) {
-  return (Size() == slice.Size()) && memcmp(Data(), slice.Data(), Size());
-}
-
-inline bool Slice::operator!=(const Slice &slice) {
-  return !(*this == slice);
+char Slice::operator[](size_t i) const {
+  assert(i < Size());
+  return data_[i];
 }
 
 }  // releveldb

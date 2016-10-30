@@ -1,1 +1,1 @@
-add_subdirectory(CuckooHashingTableTest)
+add_subdirectory(SliceTest)
