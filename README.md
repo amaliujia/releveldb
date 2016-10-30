@@ -1,5 +1,3 @@
-# ConcurrentLib
-Serious Concurrent Data Structure Lib
+# releveldb
 
-# Cuckoo hashing table
-ongoing..
+reimplement leveldb for practice
