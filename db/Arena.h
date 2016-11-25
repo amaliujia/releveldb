@@ -9,6 +9,7 @@
 #include <vector>
 #include <assert.h>
 #include <iostream>
+#include <atomic>
 
 #include "atomic_pointer.h"
 
