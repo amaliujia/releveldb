@@ -15,8 +15,8 @@ namespace releveldb {
 
 class Slice {
 public:
-  Slice(const Slice& ) = delete;
-  Slice &operator=(const Slice&) = delete;
+  //  Slice(const Slice& ) = delete;
+  Slice& operator=(const Slice&) = delete;
 
   Slice(): data_(""), size_(0) { }
   Slice(const char* data, size_t size): data_(data),
@@ -63,6 +63,7 @@ public:
 private:
   const char* data_;
   size_t size_;
+
 };
 
 inline bool operator==(const Slice& x, const Slice& y) {
