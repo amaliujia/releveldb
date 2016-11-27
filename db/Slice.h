@@ -16,7 +16,7 @@ namespace releveldb {
 class Slice {
 public:
   //  Slice(const Slice& ) = delete;
-  Slice& operator=(const Slice&) = delete;
+//  Slice& operator=(const Slice&) = delete;
 
   Slice(): data_(""), size_(0) { }
   Slice(const char* data, size_t size): data_(data),

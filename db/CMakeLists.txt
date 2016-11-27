@@ -7,4 +7,6 @@ add_library(db Slice.cpp
                 Env.cpp
                 Env_posix.cpp
                 random.h
-                atomic_pointer.h)
+                atomic_pointer.h
+                MutexLock.h
+                port_posix.h)
