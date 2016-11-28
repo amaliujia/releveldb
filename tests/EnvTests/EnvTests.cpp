@@ -8,40 +8,29 @@
 #include "db/env.h"
 #include "db/atomic_pointer.h"
 
-
-namespace releveldb {
-
 static const int kDelayMicros = 100000;
 
-class EnvPosixTest : public ::testing::Test {
-private:
-  std::mutex mu_;
-  std::string events_;
-
-public:
-  Env* env_;
-  EnvPosixTest() : env_(Env::Default()) { }
-};
+class EnvPosixTest : public ::testing::Test { };
 
 static void SetBool(void* ptr) {
-  reinterpret_cast<AtomicPointer*>(ptr)->NoBarrier_Store(ptr);
+  reinterpret_cast<releveldb::AtomicPointer*>(ptr)->NoBarrier_Store(ptr);
 }
 
 TEST(EnvPosixTest, RunImmediately) {
-  AtomicPointer called (NULL);
-  env_->Schedule(&SetBool, &called);
-  Env::Default()->SleepForMicroseconds(kDelayMicros);
+  releveldb::AtomicPointer called (NULL);
+  releveldb::Env::Default()->Schedule(&SetBool, &called);
+  releveldb::Env::Default()->SleepForMicroseconds(kDelayMicros);
   ASSERT_TRUE(called.NoBarrier_Load() != NULL);
 }
 
 TEST(EnvPosixTest, RunMany) {
-  AtomicPointer last_id (NULL);
+  releveldb::AtomicPointer last_id (NULL);
 
 struct CB {
-  AtomicPointer* last_id_ptr;   // Pointer to shared slot
+  releveldb::AtomicPointer* last_id_ptr;   // Pointer to shared slot
   uintptr_t id;             // Order# for the execution of this callback
 
-  CB(AtomicPointer* p, int i) : last_id_ptr(p), id(i) { }
+  CB(releveldb::AtomicPointer* p, int i) : last_id_ptr(p), id(i) { }
 
   static void Run(void* v) {
     CB* cb = reinterpret_cast<CB*>(v);
@@ -56,28 +45,28 @@ struct CB {
   CB cb2(&last_id, 2);
   CB cb3(&last_id, 3);
   CB cb4(&last_id, 4);
-  env_->Schedule(&CB::Run, &cb1);
-  env_->Schedule(&CB::Run, &cb2);
-  env_->Schedule(&CB::Run, &cb3);
-  env_->Schedule(&CB::Run, &cb4);
+  releveldb::Env::Default()->Schedule(&CB::Run, &cb1);
+  releveldb::Env::Default()->Schedule(&CB::Run, &cb2);
+  releveldb::Env::Default()->Schedule(&CB::Run, &cb3);
+  releveldb::Env::Default()->Schedule(&CB::Run, &cb4);
 
-  Env::Default()->SleepForMicroseconds(kDelayMicros);
+  releveldb::Env::Default()->SleepForMicroseconds(kDelayMicros);
   void* cur = last_id.Acquire_Load();
   ASSERT_EQ(4, reinterpret_cast<uintptr_t>(cur));
 }
 
 struct State {
-  port::Mutex mu;
+  std::mutex mu;
   int val;
   int num_running;
 };
 
 static void ThreadBody(void* arg) {
   State* s = reinterpret_cast<State*>(arg);
-  s->mu.Lock();
+  s->mu.lock();
   s->val += 1;
   s->num_running -= 1;
-  s->mu.Unlock();
+  s->mu.unlock();
 }
 
 TEST(EnvPosixTest, StartThread) {
@@ -85,19 +74,16 @@ TEST(EnvPosixTest, StartThread) {
   state.val = 0;
   state.num_running = 3;
   for (int i = 0; i < 3; i++) {
-    env_->StartThread(&ThreadBody, &state);
+    releveldb::Env::Default()->StartThread(&ThreadBody, &state);
   }
   while (true) {
-    state.mu.Lock();
+    state.mu.lock();
     int num = state.num_running;
-    state.mu.Unlock();
+    state.mu.unlock();
     if (num == 0) {
       break;
     }
-    Env::Default()->SleepForMicroseconds(kDelayMicros);
+    releveldb::Env::Default()->SleepForMicroseconds(kDelayMicros);
   }
   ASSERT_EQ(state.val, 3);
 }
-
-}  // namespace releveldb
-
