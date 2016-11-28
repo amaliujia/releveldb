@@ -6,8 +6,3 @@ add_executable(status_test StatusTests.cpp)
 target_link_libraries(status_test gtest gtest_main)
 target_link_libraries(status_test db)
 #target_link_libraries (cuckoo_hasing_table_basic_test glog)
-
-if (APPLE)
-  add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)
-  add_definitions(-D__GLIBCXX__)
-endif (APPLE)

@@ -5,8 +5,3 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/googlemock/include"
 add_executable(slice_test SliceTests.cpp)
 target_link_libraries(slice_test gtest gtest_main)
 target_link_libraries(slice_test db)
-
-if (APPLE)
-  add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)
-  add_definitions(-D__GLIBCXX__)
-endif (APPLE)

@@ -54,6 +54,12 @@ public:
     size_ -= n;
   }
 
+  // Return true iff "x" is a prefix of "*this"
+  bool StartsWith(const Slice& x) const {
+    return ((size_ >= x.size_) &&
+            (memcmp(data_, x.data_, x.size_) == 0));
+  }
+
   std::string String() const {
     return std::string(data_, size_);
   }
