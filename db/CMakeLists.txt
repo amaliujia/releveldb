@@ -9,4 +9,5 @@ add_library(db Slice.cpp
                 random.h
                 atomic_pointer.h
                 MutexLock.h
-                port_posix.h)
+                port_posix.h
+                posix_logger.h)
