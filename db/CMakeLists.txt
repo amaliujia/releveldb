@@ -6,8 +6,11 @@ add_library(db Slice.cpp
                 Iterator.cpp
                 Env.cpp
                 Env_posix.cpp
+                DBFormat.cpp
+                Coding.cpp
                 random.h
                 atomic_pointer.h
                 MutexLock.h
                 port_posix.h
-                posix_logger.h)
+                posix_logger.h
+                Common.h)

@@ -26,19 +26,19 @@ TEST(EnvPosixTest, RunImmediately) {
 TEST(EnvPosixTest, RunMany) {
   releveldb::AtomicPointer last_id (NULL);
 
-struct CB {
-  releveldb::AtomicPointer* last_id_ptr;   // Pointer to shared slot
-  uintptr_t id;             // Order# for the execution of this callback
+  struct CB {
+    releveldb::AtomicPointer* last_id_ptr;   // Pointer to shared slot
+    uintptr_t id;             // Order# for the execution of this callback
 
-  CB(releveldb::AtomicPointer* p, int i) : last_id_ptr(p), id(i) { }
+    CB(releveldb::AtomicPointer* p, int i) : last_id_ptr(p), id(i) { }
 
-  static void Run(void* v) {
-    CB* cb = reinterpret_cast<CB*>(v);
-    void* cur = cb->last_id_ptr->NoBarrier_Load();
-    ASSERT_EQ(cb->id-1, reinterpret_cast<uintptr_t>(cur));
-    cb->last_id_ptr->Release_Store(reinterpret_cast<void*>(cb->id));
-  }
-};
+    static void Run(void* v) {
+      CB* cb = reinterpret_cast<CB*>(v);
+      void* cur = cb->last_id_ptr->NoBarrier_Load();
+      ASSERT_EQ(cb->id-1, reinterpret_cast<uintptr_t>(cur));
+      cb->last_id_ptr->Release_Store(reinterpret_cast<void*>(cb->id));
+    }
+  };
 
   // Schedule in different order than start time
   CB cb1(&last_id, 1);
