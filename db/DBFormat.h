@@ -11,6 +11,7 @@
 #include "db/Common.h"
 #include "db/Coding.h"
 #include "db/Slice.h"
+#include "db/Logging.h"
 
 namespace releveldb {
 
@@ -105,6 +106,22 @@ public:
   InternalKey(const Slice& key, SequenceNumber s, ValueType t) {
     AppendInternalKey(&rep_, ParsedInternalKey(key, s, t));
   }
+
+  void DecodeFrom(const Slice& s) {
+    rep_.assign(s.Data(), s.Size());
+  }
+
+  Slice Encode() const {
+    assert(!rep_.empty());
+    // Call a constructor and then do a copy?
+    return Slice(rep_);
+  }
+
+  void Clear() {
+    rep_.clear();
+  }
+
+  std::string DebugString() const;
 
 private:
   std::string rep_;

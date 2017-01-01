@@ -13,4 +13,6 @@ add_library(db Slice.cpp
                 MutexLock.h
                 port_posix.h
                 posix_logger.h
-                Common.h)
+                Common.h
+                Logging.cpp
+                Logging.h)
