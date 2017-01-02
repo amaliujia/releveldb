@@ -117,6 +117,10 @@ public:
   const Comparator* user_comparator() const { return user_comparator_; }
 
   int Compare(const InternalKey& a, const InternalKey& b) const;
+
+  void FindShortSuccessor(std::string* key) const;
+
+  void FindShortestSeparator(std::string* start, const Slice& limit) const;
 };
 
 class InternalKey {

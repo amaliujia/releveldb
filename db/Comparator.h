@@ -25,6 +25,20 @@ public:
   // Used to check if comparator matches.
   virtual const char* Name() const = 0;
 
+  // Advanced functions: these are used to reduce the space requirements
+  // for internal data structures like index blocks.
+
+  // If *start < limit, changes *start to a short string in [start,limit).
+  // Simple comparator implementations may return with *start unchanged,
+  // i.e., an implementation of this method that does nothing is correct.
+  virtual void FindShortestSeparator(
+  std::string* start,
+  const Slice& limit) const = 0;
+
+  // Changes *key to a short string >= *key.
+  // Simple comparator implementations may return with *key unchanged,
+  // i.e., an implementation of this method that does nothing is correct.
+  virtual void FindShortSuccessor(std::string* key) const = 0;
 };
 
 extern const Comparator* BytewiseComparator();
