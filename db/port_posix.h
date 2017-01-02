@@ -151,6 +151,8 @@ inline bool GetHeapProfile(void (*func)(void*, const char*, int), void* arg) {
   return false;
 }
 
+extern void InitOnce(OnceType* once, void (*initializer)());
+
 } // namespace releveldb
 
 #endif  // STORAGE_LEVELDB_PORT_PORT_POSIX_H_

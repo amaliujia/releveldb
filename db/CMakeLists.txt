@@ -15,4 +15,7 @@ add_library(db Slice.cpp
                 posix_logger.h
                 Common.h
                 Logging.cpp
-                Logging.h)
+                Logging.h
+                Comparator.h
+                Comparator.cpp
+                port_posix.cpp)

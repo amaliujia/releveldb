@@ -19,7 +19,7 @@ void AppendInternalKey(std::string* result,
   PutFixed64(result, PackSequenceAndType(key.sequence, key.type));
 }
 
-bool ParseInternalKey(const Slice& internal_key,
+inline bool ParseInternalKey(const Slice& internal_key,
                         ParsedInternalKey* result) {
   const size_t size = internal_key.Size();
   if (size < 8) {
@@ -45,6 +45,32 @@ std::string ParsedInternalKey::DebugString() const {
   result.append(EscapeString(user_key));
   result.append(buf);
   return result;
+}
+
+const char* InternalKeyComparator::Name() const {
+  return "releveldb.InternalKeyComparator";
+}
+
+// Order by:
+//    increasing user key (according to user-supplied comparator)
+//    decreasing sequence number
+//    decreasing type (though sequence# should be enough to disambiguate)
+int InternalKeyComparator::Compare(const Slice& a, const Slice& b) const {
+  int result = user_comparator_->Compare(ExtractUserKey(a), ExtractUserKey(b));
+  if (result == 0) {
+    uint64_t num_a = DecodeFixed64(a.Data() + a.Size() - 8);
+    uint64_t num_b = DecodeFixed64(b.Data() + b.Size() - 8);
+    if (num_a > num_b) {
+      result = -1;
+    } else if (num_a < num_b) {
+      result = +1;
+    }
+  }
+  return result;
+}
+
+inline int InternalKeyComparator::Compare(const InternalKey& a, const InternalKey& b) const {
+  return Compare(a.Encode(), b.Encode());
 }
 
 std::string InternalKey::DebugString() const {

@@ -12,6 +12,7 @@
 #include "db/Coding.h"
 #include "db/Slice.h"
 #include "db/Logging.h"
+#include "db/Comparator.h"
 
 namespace releveldb {
 
@@ -100,6 +101,24 @@ inline ValueType ExtractValueType(const Slice& internal_key) {
   return static_cast<ValueType>(c);
 }
 
+// A comparator for internal keys that uses a specified comparator for
+// the user key portion and breaks ties by decreasing sequence number.
+class InternalKeyComparator : public Comparator {
+private:
+  const Comparator* user_comparator_;
+public:
+  explicit InternalKeyComparator(const Comparator* c) :
+      user_comparator_(c) { }
+
+  virtual const char* Name() const;
+
+  virtual int Compare(const Slice& a, const Slice& b) const;
+
+  const Comparator* user_comparator() const { return user_comparator_; }
+
+  int Compare(const InternalKey& a, const InternalKey& b) const;
+};
+
 class InternalKey {
 public:
   InternalKey() {}
@@ -115,6 +134,11 @@ public:
     assert(!rep_.empty());
     // Call a constructor and then do a copy?
     return Slice(rep_);
+  }
+
+  Slice UserKey() const {
+    // Call a constructor and then do a copy?
+    return ExtractUserKey(rep_);
   }
 
   void Clear() {
