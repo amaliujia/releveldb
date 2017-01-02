@@ -26,7 +26,9 @@ inline bool ParseInternalKey(const Slice& internal_key,
     return false;
   }
 
-  uint64_t num = DecodeFixed64(internal_key.Data());
+  // The last 8 bytes saves seq num and value type, in which the last 1 byte
+  // saves value type and the first 7 bytes save sequence number.
+  uint64_t num = DecodeFixed64(internal_key.Data() + internal_key.Size() - 8);
   unsigned char c = num & 0xff;
   result->sequence = num >> 8;
   result->type = static_cast<ValueType>(c);
