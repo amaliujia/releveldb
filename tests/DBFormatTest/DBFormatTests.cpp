@@ -46,8 +46,6 @@ static void TestKey(const std::string& key,
   ASSERT_TRUE(!ParseInternalKey(Slice("bar"), &decoded));
 }
 
-class FormatTest { };
-
 TEST(DBFormatTests, InternalKey_EncodeDecode) {
   const char* keys[] = { "", "k", "hello", "longggggggggggggggggggggg" };
   const uint64_t seq[] = {
