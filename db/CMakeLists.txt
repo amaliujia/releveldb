@@ -18,4 +18,10 @@ add_library(db Slice.cpp
                 Logging.h
                 Comparator.h
                 Comparator.cpp
-                port_posix.cpp)
+                port_posix.cpp
+                Options.h
+                DB.h
+                Cache.cpp
+                Cache.h
+                Table.cpp
+                Table.h Block.cpp Block.h Format.cpp Format.h)
