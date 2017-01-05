@@ -12,6 +12,36 @@ uint32_t Block::NumRestarts() const {
   return DecodeFixed32(data_ + size_ - sizeof(uint32_t));
 }
 
+// Helper routine: decode the next block entry starting at "p",
+// storing the number of shared key bytes, non_shared key bytes,
+// and the length of the value in "*shared", "*non_shared", and
+// "*value_length", respectively.  Will not dereference past "limit".
+//
+// If any errors are detected, returns NULL.  Otherwise, returns a
+// pointer to the key delta (just past the three decoded values).
+static inline const char* DecodeEntry(const char* p, const char* limit,
+                                      uint32_t* shared,
+                                      uint32_t* non_shared,
+                                      uint32_t* value_length) {
+  if (limit - p < 3) return NULL;
+  *shared = reinterpret_cast<const unsigned char*>(p)[0];
+  *non_shared = reinterpret_cast<const unsigned char*>(p)[1];
+  *value_length = reinterpret_cast<const unsigned char*>(p)[2];
+  if ((*shared | *non_shared | *value_length) < 128) {
+    // Fast path: all three values are encoded in one byte each
+    p += 3;
+  } else {
+    if ((p = GetVarint32Ptr(p, limit, shared)) == NULL) return NULL;
+    if ((p = GetVarint32Ptr(p, limit, non_shared)) == NULL) return NULL;
+    if ((p = GetVarint32Ptr(p, limit, value_length)) == NULL) return NULL;
+  }
+
+  if (static_cast<uint32_t>(limit - p) < (*non_shared + *value_length)) {
+    return NULL;
+  }
+  return p;
+}
+
 Block::Block(const BlockContents& content): data_(content.data.Data()),
                                             size_(content.data.Size()),
                                             owned_(content.heap_allocated)
@@ -57,7 +87,48 @@ public:
 
   virtual void SeekToLast() = 0;
 
-  virtual void Seek(const Slice &key) = 0;
+  virtual void Seek(const Slice &target) {
+    // Binary search in restart array to find the last restart point
+    // with a key < target
+    uint32_t left = 0;
+    uint32_t right = num_restarts_ - 1;
+
+    while (left < right) {
+      uint32_t mid = (left + right + 1) / 2;
+      uint32_t region_offset = GetRestartPoint(mid);
+      uint32_t shared, non_shared, value_length;
+
+      const char* key_ptr = DecodeEntry(data_ + region_offset,
+                                        data_ + restarts_,
+                                        &shared, &non_shared, &value_length);
+
+      if (key_ptr == NULL || (shared != 0)) {
+        CorruptionError();
+        return;
+      }
+
+      Slice mid_key(key_ptr, non_shared);
+      if (Compare(mid_key, target) < 0) {
+        // Key at "mid" is smaller than "target".  Therefore all
+        // blocks before "mid" are uninteresting.
+        left = mid;
+      } else {
+        // Key at "mid" is >= "target".  Therefore all blocks at or
+        // after "mid" are uninteresting.
+        right = mid - 1;
+      }
+    }
+
+    SeekToRestartPoint(left);
+    while (true) {
+      if (!ParseNextKey()) {
+        return;
+      }
+      if (Compare(key_, target) >= 0) {
+        return;
+      }
+    }
+  }
 
   virtual void Next() = 0;
 
@@ -76,6 +147,24 @@ public:
   virtual Status GetStatus() const {
     return status_;
   };
+
+private:
+  uint32_t GetRestartPoint(uint32_t index) {
+    assert(index < num_restarts_);
+    return DecodeFixed32(data_ + restarts_ + index * sizeof(uint32_t));
+  }
+
+  inline int Compare(const Slice& a, const Slice& b) const {
+    return comparator_->Compare(a, b);
+  }
+
+  void CorruptionError() {
+    current_ = restarts_;
+    restart_index_ = num_restarts_;
+    status_ = Status::Corruption("bad entry in block");
+    key_.clear();
+    value_.Clear();
+  }
 
 private:
   const Comparator* const comparator_;

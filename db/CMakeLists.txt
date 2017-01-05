@@ -24,4 +24,8 @@ add_library(db Slice.cpp
                 Cache.cpp
                 Cache.h
                 Table.cpp
-                Table.h Block.cpp Block.h Format.cpp Format.h)
+                Table.h
+                Block.cpp
+                Block.h
+                Format.cpp
+                Format.h)
