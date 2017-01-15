@@ -28,4 +28,6 @@ add_library(db Slice.cpp
                 Block.cpp
                 Block.h
                 Format.cpp
-                Format.h)
+                Format.h
+                FilterPolicy.h
+                FilterPolicy.cpp)

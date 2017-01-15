@@ -149,6 +149,45 @@ public:
   };
 
 private:
+  void SeekToRestartPoint(uint32_t index) {
+    key_.clear();
+    restart_index_ = index;
+    // current_ will be fixed by ParseNextKey();
+
+    // ParseNextKey() starts at the end of value_, so set value_ accordingly
+    uint32_t offset = GetRestartPoint(index);
+    value_ = Slice(data_ + offset, 0);
+  }
+
+  bool ParseNextKey() {
+    current_ = NextEntryOffset();
+    const char* p = data_ + current_;
+    const char* limit = data_ + restarts_;  // Restarts come right after data
+    if (p >= limit) {
+      // No more entries to return.  Mark as invalid.
+      current_ = restarts_;
+      restart_index_ = num_restarts_;
+      return false;
+    }
+
+    // Decode next entry
+    uint32_t shared, non_shared, value_length;
+    p = DecodeEntry(p, limit, &shared, &non_shared, &value_length);
+    if (p == NULL || key_.size() < shared) {
+      CorruptionError();
+      return false;
+    } else {
+      key_.resize(shared);
+      key_.append(p, non_shared);
+      value_ = Slice(p + non_shared, value_length);
+      while (restart_index_ + 1 < num_restarts_ &&
+             GetRestartPoint(restart_index_ + 1) < current_) {
+        ++restart_index_;
+      }
+      return true;
+    }
+  }
+
   uint32_t GetRestartPoint(uint32_t index) {
     assert(index < num_restarts_);
     return DecodeFixed32(data_ + restarts_ + index * sizeof(uint32_t));
@@ -156,6 +195,11 @@ private:
 
   inline int Compare(const Slice& a, const Slice& b) const {
     return comparator_->Compare(a, b);
+  }
+
+  // Return the offset in data_ just past the end of the current entry.
+  inline uint32_t NextEntryOffset() const {
+    return (value_.Data() + value_.Size()) - data_;
   }
 
   void CorruptionError() {
