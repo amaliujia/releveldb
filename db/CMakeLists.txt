@@ -30,4 +30,6 @@ add_library(db Slice.cpp
                 Format.cpp
                 Format.h
                 FilterPolicy.h
-                FilterPolicy.cpp)
+                FilterPolicy.cpp
+                SkipList.h
+                SkipList.cpp)
