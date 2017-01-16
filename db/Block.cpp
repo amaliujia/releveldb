@@ -23,19 +23,25 @@ static inline const char* DecodeEntry(const char* p, const char* limit,
                                       uint32_t* shared,
                                       uint32_t* non_shared,
                                       uint32_t* value_length) {
+  // limit is the bound of p, cannot dereferene past this bound.
   if (limit - p < 3) return NULL;
+  // Three bytes save 3 int.
   *shared = reinterpret_cast<const unsigned char*>(p)[0];
   *non_shared = reinterpret_cast<const unsigned char*>(p)[1];
   *value_length = reinterpret_cast<const unsigned char*>(p)[2];
+  // the highest bit should be 0, so 01111111 < 128
   if ((*shared | *non_shared | *value_length) < 128) {
     // Fast path: all three values are encoded in one byte each
     p += 3;
   } else {
+    // 分别解析每个长度: 共享key长度、非共享key长度、value长度
     if ((p = GetVarint32Ptr(p, limit, shared)) == NULL) return NULL;
     if ((p = GetVarint32Ptr(p, limit, non_shared)) == NULL) return NULL;
     if ((p = GetVarint32Ptr(p, limit, value_length)) == NULL) return NULL;
   }
 
+  // non_shared + value_length is equal to left chars starting with p.
+  // 剩余数据长度 < 解析的"key非共享内存"和"value内容"长度，则数据非法
   if (static_cast<uint32_t>(limit - p) < (*non_shared + *value_length)) {
     return NULL;
   }
