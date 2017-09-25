@@ -12,3 +12,5 @@ add_subdirectory(ArenaTest)
 add_subdirectory(EnvTests)
 
 add_subdirectory(DBFormatTest)
+
+add_subdirectory(SkipListTests)

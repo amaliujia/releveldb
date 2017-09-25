@@ -13,7 +13,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "db/env.h"
+#include "db/Env.h"
 
 namespace releveldb {
 

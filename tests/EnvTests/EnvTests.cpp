@@ -5,7 +5,7 @@
 #include <mutex>
 
 #include "gtest/gtest.h"
-#include "db/env.h"
+#include "db/Env.h"
 #include "db/atomic_pointer.h"
 
 static const int kDelayMicros = 100000;

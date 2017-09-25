@@ -32,4 +32,7 @@ add_library(db Slice.cpp
                 FilterPolicy.h
                 FilterPolicy.cpp
                 SkipList.h
-                SkipList.cpp)
+                SkipList.cpp
+                Log_format.h
+                LogWritter.h
+                LogWritter.cpp)
